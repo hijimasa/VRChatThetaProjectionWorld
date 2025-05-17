@@ -5,7 +5,10 @@ import cv2
 from flask import Flask, Response
 
 import argparse
+import sys
 import os
+import urllib.request
+import zipfile
 from typing import List
 
 import numpy as np
@@ -26,6 +29,33 @@ lock = threading.Lock()
 latest_frame = None
 
 device = "cuda"
+
+# Check if UniFuse directory exists in ckpt folder
+CHECKPOINT_URL = "https://drive.usercontent.google.com/download?id=1yE555x5tvC3zJx_KxyuMKi4ok-joKpdg&export=download&authuser=0&confirm=t&uuid=9cd70cd3-82e1-4921-84cd-82add4216766&at=ALoNOglf-ccUjuZBaqROJcffZPJT%3A1747060462078"
+ckpt_dir = os.path.join('checkpoints')
+unifuse_dir = os.path.join('checkpoints', 'UniFuse')
+if not os.path.exists(unifuse_dir):
+    sys.stderr.write("UniFuse directory not found. Downloading checkpoint...\n")
+        
+    zip_path = os.path.join(ckpt_dir, 'checkpoint.zip')
+    sys.stderr.write(f'Downloading checkpoint from {CHECKPOINT_URL} to {zip_path}...\n')
+    try:
+        urllib.request.urlretrieve(CHECKPOINT_URL, zip_path)
+    except Exception as e:
+        sys.stderr.write(f'Error downloading checkpoint: {e}\n', file=sys.stderr)
+        sys.exit(1)
+    sys.stderr.write('Download complete. Extracting files...\n')
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zf:
+            zf.extractall(ckpt_dir)
+    except zipfile.BadZipFile as e:
+        sys.stderr.write(f'Error unpacking zip file: {e}\n', file=sys.stderr)
+        sys.exit(1)
+    # ZIP を削除
+    os.remove(zip_path)
+    sys.stderr.write('Extraction complete and zip file removed.\n')
+else:
+    sys.stderr.write('UniFuse checkpoint already exists, skip download.\n')
 
 # set arguments
 model_dict = {
