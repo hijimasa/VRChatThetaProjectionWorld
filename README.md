@@ -3,6 +3,8 @@ English | [日本語](README-ja.md)
 
 ## Overview
 
+![](./figs/test.gif)
+
 This project visualizes monocular depth estimation results from a THETA camera in a VRChat world, displaying them with color mapping. It consists of two main components:
 
 - **ThetaImageServer**: A server program that generates and streams both color and depth images from the THETA camera.
