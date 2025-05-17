@@ -83,4 +83,6 @@ VRTest/Logs/
 *.swp
 *.csproj
 
+ThetaImageServer/checkpoints/*
+!ThetaImageServer/checkpoints/README.md
 *.pyc
