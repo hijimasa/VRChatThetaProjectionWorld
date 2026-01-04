@@ -1,13 +1,18 @@
-# UniFuse
+# Core dependencies
 torch==2.3.0
 torchvision==0.18.0
+numpy==1.24.4
+opencv-python==4.9.0.80
+
+# UniFuse model dependencies
 tensorboard==2.14.0
 PyYAML==6.0.1
 timm==0.9.12
 einops==0.7.0
-opencv-python-headless==4.9.0.80
-numpy==1.24.4
 scipy==1.10.0
+
+# Virtual camera output
+pyvirtualcam==0.11.0
 pillow==10.2.0
 tqdm==4.66.2
 matplotlib==3.7.5
