@@ -9,8 +9,9 @@ public static class UVSphereMeshGenerator
     public static void CreateUvSphereMeshAsset()
     {
         // ここを好みに変えてOK（ダイアログ無しでまず動くように固定値）
-        int segments = 128;      // 経度
-        int rings = 64;         // 緯度
+        // 深度マップ(1024x512)の2ピクセルごとに1頂点サンプリングする解像度
+        int segments = 512;      // 経度
+        int rings = 256;         // 緯度
         float radius = 1.0f;
         float boundsScale = 100.0f;
 

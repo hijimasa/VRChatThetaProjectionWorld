@@ -20,7 +20,8 @@ RICOH THETAカメラの360°映像+深度ストリームを、深度に応じて
 | `Shaders/ThetaDepthDisplacementShader.shader` | 頂点変形シェーダー(`ThetaProjection/DepthDisplacement`)。映像の深度側半分に基づいて球体を頂点単位で変形 |
 | `Shaders/ThetaProjectionShader.shader` | 変形なしの単純なEquirectangular投影シェーダー |
 | `Materials/ThetaProjectionScreen.mat` | 投影スフィア用のマテリアル(そのまま使用可) |
-| `Meshes/UVSphere_seg128_ring64_r1.asset` | スクリーンとして使う128x64のUVスフィアメッシュ |
+| `Meshes/UVSphere_seg512_ring256_r1.asset` | スクリーンとして使う512x256のUVスフィアメッシュ(深度マップ1024x512を2ピクセルごとにサンプリング) |
+| `Meshes/UVSphere_seg128_ring64_r1.asset` | 低解像度の128x64スフィア(旧版・低スペック向け) |
 | `Udon/ThetaProjectionSetup.cs` | ワールド内からシェーダーパラメータを調整するUdonSharpビヘイビア(任意) |
 | `Editor/ThetaProjectionScreenTool.cs` | ワンクリックセットアップメニュー(下記参照) |
 | `Editor/UVSphereMeshGenerator.cs` | 解像度を変えたUVスフィアを再生成するツール |
@@ -69,6 +70,8 @@ RICOH THETAカメラの360°映像+深度ストリームを、深度に応じて
 | `_MinRadius` | 球体の最小半径[m] | 0.1 |
 | `_FlipY_Depth` | 深度側サンプリング時のV反転 | 0 |
 | `_FlipY_RGB` | RGB側表示時のV反転 | 1 |
+| `_EdgeClip` | 深度不連続(物体輪郭)をまたいで引き伸ばされた三角形を除去。「ゴム膜」状のスミアが穴に変わる | 1 (有効) |
+| `_EdgeClipRatio` | クリップ判定に使う近傍半径比のしきい値。小さいほど積極的に除去 | 1.6 |
 
 ## 再配布について
 

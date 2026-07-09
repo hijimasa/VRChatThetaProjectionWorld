@@ -6,8 +6,8 @@ using UnityEditor;
 
 public static class ThetaProjectionScreenTool
 {
-    // Assets/ThetaProjection/Meshes/UVSphere_seg128_ring64_r1.asset
-    const string SphereMeshGuid = "a36e18aabf5627b45a62096416779fe5";
+    // Assets/ThetaProjection/Meshes/UVSphere_seg512_ring256_r1.asset
+    const string SphereMeshGuid = "202ba8492e3ab39408cdd33dbf09b9de";
     // Assets/ThetaProjection/Materials/ThetaProjectionScreen.mat
     const string ScreenMaterialGuid = "c8068fd3d5dbfb06fbb34e595a9af3cc";
 

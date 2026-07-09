@@ -20,7 +20,8 @@ right: depth 1024x512).
 | `Shaders/ThetaDepthDisplacementShader.shader` | Vertex-displacement shader (`ThetaProjection/DepthDisplacement`). Deforms the sphere per-vertex from the depth half of the video. |
 | `Shaders/ThetaProjectionShader.shader` | Simple equirectangular projection shader (no displacement). |
 | `Materials/ThetaProjectionScreen.mat` | Ready-to-use material for the projection sphere. |
-| `Meshes/UVSphere_seg128_ring64_r1.asset` | 128x64 UV sphere mesh used as the screen. |
+| `Meshes/UVSphere_seg512_ring256_r1.asset` | 512x256 UV sphere mesh used as the screen (samples the 1024x512 depth map every 2 pixels). |
+| `Meshes/UVSphere_seg128_ring64_r1.asset` | Lower-resolution 128x64 sphere (legacy / low-spec fallback). |
 | `Udon/ThetaProjectionSetup.cs` | Optional UdonSharp behaviour for adjusting shader parameters in-world (sliders/buttons). |
 | `Editor/ThetaProjectionScreenTool.cs` | One-click setup menu (see below). |
 | `Editor/UVSphereMeshGenerator.cs` | Regenerates the UV sphere mesh with different resolution if needed. |
@@ -68,6 +69,8 @@ sliders/buttons.
 | `_MinRadius` | Minimum sphere radius in meters | 0.1 |
 | `_FlipY_Depth` | Flip V when sampling the depth half | 0 |
 | `_FlipY_RGB` | Flip V when displaying the RGB half | 1 |
+| `_EdgeClip` | Remove triangles stretched across depth discontinuities (object silhouettes). Disocclusion "rubber sheet" smears become holes instead | 1 (on) |
+| `_EdgeClipRatio` | Neighbor radius ratio above which a stretched triangle is clipped. Lower = more aggressive | 1.6 |
 
 ## Redistribution
 
