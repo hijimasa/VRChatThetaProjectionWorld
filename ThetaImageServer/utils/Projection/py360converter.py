@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.ndimage import map_coordinates
 import cv2
 
 
@@ -68,6 +67,8 @@ class Equirec2Cube:
         self.coor_y = (-lat / np.pi + 0.5) * self.equ_h - 0.5
 
     def sample_equirec(self, e_img, order=0):
+        # scipy はこの経路でのみ必要(server.py の cv2.remap 経路では不要)
+        from scipy.ndimage import map_coordinates
         pad_u = np.roll(e_img[[0]], self.equ_w // 2, 1)
         pad_d = np.roll(e_img[[-1]], self.equ_w // 2, 1)
         e_img = np.concatenate([e_img, pad_d, pad_u], 0)

@@ -67,7 +67,7 @@ class Cube2Equirec(nn.Module):
         tp = np.roll(np.arange(4).repeat(self.equ_w // 4)[None, :].repeat(self.equ_h, 0), 3 * self.equ_w // 8, 1)
 
         # Prepare ceil mask
-        mask = np.zeros((self.equ_h, self.equ_w // 4), np.bool)
+        mask = np.zeros((self.equ_h, self.equ_w // 4), bool)
         idx = np.linspace(-np.pi, np.pi, self.equ_w // 4) / 4
         idx = self.equ_h // 2 - np.round(np.arctan(np.cos(idx)) * self.equ_h / np.pi).astype(int)
         for i, j in enumerate(idx):
@@ -110,26 +110,36 @@ class Cube2Equirec(nn.Module):
         coor_v = (np.clip(coor_v, -0.5, 0.5)) * 2
 
         # Convert to torch tensor
-        self.tp = torch.from_numpy(self.tp.astype(np.float32) / 2.5 - 1)
         self.coor_u = torch.from_numpy(coor_u)
         self.coor_v = torch.from_numpy(coor_v)
 
-        sample_grid = torch.stack([self.coor_u, self.coor_v, self.tp], dim=-1).view(1, 1, self.equ_h, self.equ_w, 3)
-        self.sample_grid = nn.Parameter(sample_grid, requires_grad=False)
+        # 4D horizontal-strip sampling grid.
+        # Each equirectangular pixel samples from exactly one cube face, so the
+        # original 5D volumetric grid_sample (unsupported by ONNX export) is
+        # replaced by an equivalent 4D grid_sample over the [F R B L U D]
+        # horizontal strip the network already receives as input.
+        face_x = (coor_u.astype(np.float64) + 1) / 2 * (self.face_w - 1)
+        strip_x = self.tp.astype(np.float64) * self.face_w + face_x
+        x_norm = 2 * strip_x / (6 * self.face_w - 1) - 1
+        sample_grid = np.stack([x_norm, coor_v.astype(np.float64)], axis=-1).astype(np.float32)
+        # persistent=False: resolution-dependent constant, not a learned weight,
+        # so it is excluded from state_dict (checkpoints saved with the old 5D
+        # grid contain "sample_grid" keys that must be filtered out on load)
+        self.register_buffer(
+            "sample_grid",
+            torch.from_numpy(sample_grid).view(1, self.equ_h, self.equ_w, 2),
+            persistent=False)
+        self.tp = torch.from_numpy(self.tp.astype(np.float32) / 2.5 - 1)
 
     def forward(self, cube_feat):
 
         bs, ch, h, w = cube_feat.shape
         assert h == self.face_w and w // 6 == self.face_w
 
-        cube_feat = cube_feat.view(bs, ch, 1,  h, w)
-        cube_feat = torch.cat(torch.split(cube_feat, self.face_w, dim=-1), dim=2)
-
-        cube_feat = cube_feat.view([bs, ch, 6, self.face_w, self.face_w])
-        sample_grid = torch.cat(bs * [self.sample_grid], dim=0)
+        sample_grid = self.sample_grid.expand(bs, -1, -1, -1)
         equi_feat = F.grid_sample(cube_feat, sample_grid, padding_mode="border", align_corners=True)
 
-        return equi_feat.squeeze(2)
+        return equi_feat
 
 
 class Concat(nn.Module):

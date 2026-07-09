@@ -22,20 +22,23 @@ lock = threading.Lock()
 latest_frame = None
 scale = 1.0
 
-device = "cuda"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # --- モデル初期化 ---
 model_dict = {
     'num_layers': 18,
     'equi_h': 512,
     'equi_w': 1024,
-    'pretrained': True,
+    'pretrained': False,
     'max_depth': 10.0,
     'fusion_type': 'cee',
     'se_in_fusion': True
 }
 model = UniFuse(**model_dict).to(device)
-ckpt = torch.load("./checkpoints/UniFuse/UniFuse_SpatialAudioGen.pth")
+ckpt = torch.load("./checkpoints/UniFuse/UniFuse_SpatialAudioGen.pth",
+                  map_location=device, weights_only=True)
+# sample_gridは解像度依存の固定バッファ(非学習)なので旧チェックポイントの分を除外
+ckpt = {k: v for k, v in ckpt.items() if "sample_grid" not in k}
 model.load_state_dict(ckpt)
 model.eval()
 

@@ -32,6 +32,7 @@ See [`THETAProjectionWorld/Assets/ThetaProjection/README.md`](THETAProjectionWor
 - VRChat SDK3 (Worlds)
 - Python 3.8+ (for ThetaImageServer)
 - THETA camera (Z1 or V recommended)
+- GPU is optional: NVIDIA (CUDA), AMD/Intel (DirectML via ONNX Runtime), or CPU-only all work — see [Inference backends](#inference-backends)
 
 ### Pre-installation steps
 
@@ -72,12 +73,33 @@ See [`THETAProjectionWorld/Assets/ThetaProjection/README.md`](THETAProjectionWor
 
 ```bash
 cd ThetaImageServer
-python server.py --camera 0
+python server.py
 ```
 
-- `--camera 0`: Camera device ID (device ID where THETA is connected, typically 0 or 1)
-- The server outputs a combined image (2048x512) with RGB and depth images side by side to a virtual camera named "THETA Depth Camera".
+- The server outputs a combined image (2048x512) with RGB and depth images side by side to the OBS virtual camera.
 - On first run, the UniFuse model checkpoint will be automatically downloaded.
+- Every 10 seconds the server prints the FPS with a per-stage time breakdown.
+
+Options:
+
+| Option | Description |
+|---|---|
+| `--capture {auto,av,opencv}` | Capture method. `auto` uses PyAV (FFmpeg DirectShow, ~2-3x faster) when installed and falls back to OpenCV |
+| `--device-name NAME` | DirectShow device name for PyAV capture (default: `RICOH THETA UVC`) |
+| `--index N` / `--camera N` | Camera device index for OpenCV capture (default: 0) |
+| `--backend {auto,torch,onnx}` | Inference backend. `auto` picks CUDA → DirectML → CPU |
+| `--infer-height N` | Inference input height (width = 2N). Defaults to 512 on GPU, 256 on CPU |
+| `--export-onnx` | Export the ONNX models and exit (for non-NVIDIA machines) |
+
+#### Inference backends
+
+The depth model runs on one of the following (picked automatically):
+
+1. **PyTorch + CUDA** — NVIDIA GPUs
+2. **ONNX Runtime + DirectML** — any DirectX 12 GPU (AMD / Intel / NVIDIA), e.g. the Radeon iGPU of small laptops like the GPD Pocket 4: `pip install onnxruntime-directml`
+3. **ONNX Runtime CPU / PyTorch CPU** — inference resolution is automatically halved (512x256) to keep a usable frame rate
+
+For a machine without PyTorch (e.g. a small laptop), run `python server.py --export-onnx` once on any machine with PyTorch (`pip install onnx` required) and copy the generated `checkpoints/UniFuse/*.onnx` files — then only `onnxruntime-directml` is needed to run.
 
 ### 2. Display in VRChat World
 

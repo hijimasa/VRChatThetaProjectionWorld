@@ -32,6 +32,7 @@ TopazChat Playerはサードパーティ製アセットのため、このリポ�
 - VRChat SDK3 (Worlds)
 - Python 3.8以上(ThetaImageServer用)
 - THETAカメラ(Z1またはV推奨)
+- GPUは任意: NVIDIA(CUDA)、AMD/Intel(ONNX Runtime + DirectML)、CPUのみ、いずれでも動作します — [推論バックエンド](#推論バックエンド)参照
 
 ### 事前準備
 
@@ -72,12 +73,33 @@ TopazChat Playerはサードパーティ製アセットのため、このリポ�
 
 ```bash
 cd ThetaImageServer
-python server.py --camera 0
+python server.py
 ```
 
-- `--camera 0`: カメラデバイスID（THETAを接続したデバイスID、通常0または1）
-- サーバーが起動すると、RGB画像と深度画像を横に並べた結合画像（2048x512）が仮想カメラ「THETA Depth Camera」として出力されます。
+- RGB画像と深度画像を横に並べた結合画像（2048x512）がOBS仮想カメラとして出力されます。
 - 初回起動時、UniFuseモデルのチェックポイントが自動的にダウンロードされます。
+- 10秒ごとにFPSとステージ別処理時間の内訳が表示されます。
+
+オプション:
+
+| オプション | 説明 |
+|---|---|
+| `--capture {auto,av,opencv}` | キャプチャ方式。`auto`はPyAV(FFmpeg DirectShow、約2〜3倍高速)があれば使用し、なければOpenCVにフォールバック |
+| `--device-name NAME` | PyAVキャプチャ時のDirectShowデバイス名(既定: `RICOH THETA UVC`) |
+| `--index N` / `--camera N` | OpenCVキャプチャ時のカメラインデックス(既定: 0) |
+| `--backend {auto,torch,onnx}` | 推論バックエンド。`auto`はCUDA→DirectML→CPUの順で自動選択 |
+| `--infer-height N` | 推論入力の高さ(幅は2倍)。既定はGPU:512 / CPU:256 |
+| `--export-onnx` | ONNXモデルをエクスポートして終了(非NVIDIA機への配布用) |
+
+#### 推論バックエンド
+
+深度推定モデルは以下のいずれかで動作します(自動選択):
+
+1. **PyTorch + CUDA** — NVIDIA GPU
+2. **ONNX Runtime + DirectML** — DirectX 12対応の任意のGPU(AMD / Intel / NVIDIA)。GPD Pocket 4のようなノートPCのRadeon iGPUでも動作します: `pip install onnxruntime-directml`
+3. **ONNX Runtime CPU / PyTorch CPU** — フレームレート確保のため推論解像度を自動で半分(512x256)に落とします
+
+PyTorchを入れたくないマシン(小型ノートPC等)向けには、PyTorchのあるマシンで一度 `python server.py --export-onnx` を実行し(`pip install onnx`が必要)、生成された `checkpoints/UniFuse/*.onnx` をコピーしてください。実行側は `onnxruntime-directml` だけで動きます。
 
 ### 2. VRChatワールドでの表示
 
