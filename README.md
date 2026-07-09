@@ -5,24 +5,35 @@ English | [日本語](README-ja.md)
 
 ![](./figs/test.gif)
 
-This project visualizes monocular depth estimation results from a THETA camera in a VRChat world, displaying them with color mapping. It consists of two main components:
+This project visualizes monocular depth estimation results from a THETA camera inside VRChat, projecting the live 360° video onto a depth-displaced sphere. It consists of two components:
 
-- **ThetaImageServer**: A server program that generates and streams both color and depth images from the THETA camera.
-- **VRTest**: A test project that receives the streamed images, generates meshes based on the depth data, and displays them.
+- **ThetaImageServer**: A server program that generates and streams a combined color + depth image from the THETA camera.
+- **ThetaProjection asset** (`THETAProjectionWorld/Assets/ThetaProjection`): A self-contained Unity asset folder (shaders, sphere mesh, material, optional Udon behaviour, editor tools) that you can drop into **any** VRChat world project.
 
-For the VRChat project, the most important scripts—such as those for mesh deformation—are located directly under the `Assets/Scenes` directory.
+**You do not need to use this repository's world.** The recommended way to use this project is to copy the `ThetaProjection` folder (or import an exported `ThetaProjection.unitypackage`) into your own world and combine it with your own video player. The Unity project in this repository is just a sample/development world.
 
-## Getting Started
+TopazChat Player is a third-party asset and is **not** included in this repository (and never needs to be modified — the `ThetaProjection` asset works with an unmodified TopazChat Player).
+
+## Using the ThetaProjection asset in your own world
+
+1. Copy `THETAProjectionWorld/Assets/ThetaProjection` into your world project's `Assets` folder (or import the `.unitypackage`). Requires VRChat SDK3 Worlds.
+2. Set up a video player in your world as usual, e.g. [TopazChat Player 3.0](https://booth.pm/ja/items/1752066) (download it yourself from BOOTH).
+3. Select the video player's screen object (for TopazChat Player: the `Monitor` object in the prefab).
+4. Run **Tools > THETA Projection > Convert Selected Screen To Projection Sphere** from the Unity menu. This swaps the screen's mesh and material for the projection sphere — the video player's own files are left untouched.
+
+See [`THETAProjectionWorld/Assets/ThetaProjection/README.md`](THETAProjectionWorld/Assets/ThetaProjection/README.md) for details (other video players, in-world parameter adjustment, shader parameters, exporting the unitypackage).
+
+## Running the sample world in this repository
 
 ### Prerequisites
 
 - Windows
-- Unity 2021.3 LTS or later
+- Unity 2022.3 LTS (via VRChat Creator Companion)
 - VRChat SDK3 (Worlds)
 - Python 3.8+ (for ThetaImageServer)
 - THETA camera (Z1 or V recommended)
 
-### Pre-Installation Steps
+### Pre-installation steps
 
 1. **Install THETA UVC Driver for Windows**
    - Download and install the Windows UVC driver from [RICOH THETA UVC Driver](https://support.ricoh360.com/ja/app-download).
@@ -30,14 +41,14 @@ For the VRChat project, the most important scripts—such as those for mesh defo
 
 2. **Set up TopazChat Player 3.0**
    - Download [TopazChat Player 3.0](https://booth.pm/ja/items/1752066) from BOOTH.
-   - Extract the downloaded zip file and place its contents in the `THETAProjectionWorld/Assets` directory.
+   - Extract the downloaded zip file and place its contents in the `THETAProjectionWorld/Assets` directory (no modification needed).
    - TopazChat Player is used to receive video streaming within VRChat.
 
 ### Setup
 
 1. **Clone this repository**:
    ```bash
-   git clone https://github.com/yourusername/VRChatThetaProjectionWorld.git
+   git clone https://github.com/hijimasa/VRChatThetaProjectionWorld.git
    cd VRChatThetaProjectionWorld
    ```
 
@@ -53,7 +64,6 @@ For the VRChat project, the most important scripts—such as those for mesh defo
 
 4. **Set up Unity project**:
    - Open the Unity project in the `THETAProjectionWorld` directory.
-   - Import VRChat SDK3 (Worlds).
    - Ensure TopazChat Player 3.0 files are placed in the `Assets` folder.
 
 ## Usage
@@ -74,11 +84,10 @@ python server.py --camera 0
 1. Open the scene in `Assets/Scenes` in Unity Editor.
 2. Select the virtual camera "THETA Depth Camera" in TopazChat Player.
 3. Enter Play Mode to see real-time mesh deformation based on depth data.
-4. Adjust parameters in the Inspector:
+4. Adjust parameters on the `ThetaProjectionScreen` material (`Assets/ThetaProjection/Materials`):
    - **Depth Scale**: Depth scaling factor
-   - **Sphere Radius**: Projection sphere radius
-   - **Min Radius**: Minimum radius
-   - **Flip Y**: Flip image vertically
+   - **Minimum Radius**: Minimum sphere radius
+   - **Flip Y for Depth/RGB**: Flip image vertically
 
 ### 3. Upload to VRChat
 
@@ -95,16 +104,18 @@ VRChatThetaProjectionWorld/
 │   ├── baseline_models/       # UniFuse depth estimation model
 │   ├── utils/                 # Utilities (Equirectangular conversion, etc.)
 │   └── checkpoints/           # Model checkpoints (auto-downloaded)
-├── THETAProjectionWorld/      # Unity project
+├── THETAProjectionWorld/      # Sample Unity world project
 │   └── Assets/
-│       ├── Scenes/            # Main scene
-│       │   ├── ThetaDepthMeshDeformer.cs      # Mesh deformation script
-│       │   └── ThetaDepthDisplacementShader.shader  # GPU deformation shader
-│       └── Editor/
-│           └── UVSphereMeshGenerator.cs  # Mesh generation tool
+│       ├── ThetaProjection/   # ★ Redistributable asset — copy this into your world
+│       │   ├── Shaders/       # Depth displacement / projection shaders
+│       │   ├── Materials/     # ThetaProjectionScreen.mat
+│       │   ├── Meshes/        # UV sphere mesh
+│       │   ├── Udon/          # Optional in-world parameter adjustment
+│       │   └── Editor/        # One-click setup & export tools
+│       └── Scenes/            # Sample world scene
 └── README.md
 ```
 
 ## License
 
-This project is licensed under the Apache 2.0 License.
+This project is licensed under the Apache 2.0 License. (TopazChat Player is a separate third-party work and is not covered by this license.)

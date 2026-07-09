@@ -1,25 +1,37 @@
 # VRChatThetaProjectionWorld
 [English](README.md) | 日本語
+
 ## 概要
 
 ![](./figs/test.gif)
 
-このプロジェクトは、THETAカメラによる単眼深度推定の結果をVRChatワールド内で可視化し、カラーマッピングで表示します。主に以下の2つのコンポーネントで構成されています。
+このプロジェクトは、THETAカメラによる単眼深度推定の結果をVRChat内で可視化し、360°映像を深度に応じて変形する球体に投影します。主に以下の2つのコンポーネントで構成されています。
 
-- **ThetaImageServer**: THETAカメラからカラー画像と深度画像を生成・配信するサーバープログラム。
-- **VRTest**: 配信された画像を受信し、深度データに基づいてメッシュを生成・表示するテストプロジェクト。
+- **ThetaImageServer**: THETAカメラからカラー画像+深度画像の結合映像を生成・配信するサーバープログラム。
+- **ThetaProjectionアセット** (`THETAProjectionWorld/Assets/ThetaProjection`): シェーダー・球体メッシュ・マテリアル・Udonビヘイビア(任意)・エディタツールをまとめた自己完結型のUnityアセットフォルダ。**任意のVRChatワールドプロジェクトにそのままコピーして使えます。**
 
-VRChatプロジェクトで重要なスクリプト（メッシュ変形など）は `Assets/Scenes` ディレクトリ直下に配置されています。
+**このリポジトリのワールドをそのまま使う必要はありません。** 推奨される使い方は、`ThetaProjection` フォルダ(またはエクスポートした `ThetaProjection.unitypackage`)を自分のワールドにコピーし、お好みのビデオプレイヤーと組み合わせる方法です。このリポジトリのUnityプロジェクトはサンプル兼開発用ワールドという位置づけです。
 
-## はじめに
+TopazChat Playerはサードパーティ製アセットのため、このリポジトリには**含まれていません**(また、改変する必要も一切ありません — `ThetaProjection` アセットは未改変のTopazChat Playerとそのまま組み合わせられます)。
+
+## ThetaProjectionアセットを自分のワールドで使う
+
+1. `THETAProjectionWorld/Assets/ThetaProjection` をワールドプロジェクトの `Assets` にコピーします(または `.unitypackage` をインポート)。VRChat SDK3 Worldsが必要です。
+2. ビデオプレイヤーを通常どおりワールドにセットアップします。例: [TopazChat Player 3.0](https://booth.pm/ja/items/1752066)(BOOTHから各自入手)。
+3. ビデオプレイヤーのスクリーンオブジェクトを選択します(TopazChat Playerの場合はプレハブ内の `Monitor` オブジェクト)。
+4. Unityメニューの **Tools > THETA Projection > Convert Selected Screen To Projection Sphere** を実行します。スクリーンのメッシュとマテリアルが投影スフィア用に差し替わります。ビデオプレイヤー側のファイルは一切改変されません。
+
+詳細(他のビデオプレイヤーとの組み合わせ、ワールド内でのパラメータ調整、シェーダーパラメータ、unitypackageのエクスポート)は [`THETAProjectionWorld/Assets/ThetaProjection/README-ja.md`](THETAProjectionWorld/Assets/ThetaProjection/README-ja.md) を参照してください。
+
+## このリポジトリのサンプルワールドを動かす
 
 ### 必要条件
 
 - Windows
-- Unity 2021.3 LTS 以降
+- Unity 2022.3 LTS(VRChat Creator Companion経由)
 - VRChat SDK3 (Worlds)
-- Python 3.8以上（ThetaImageServer用）
-- THETAカメラ（Z1またはV推奨）
+- Python 3.8以上(ThetaImageServer用)
+- THETAカメラ(Z1またはV推奨)
 
 ### 事前準備
 
@@ -29,14 +41,14 @@ VRChatプロジェクトで重要なスクリプト（メッシュ変形など�
 
 2. **TopazChat Player 3.0の配置**
    - [TopazChat Player 3.0](https://booth.pm/ja/items/1752066)をBOOTHからダウンロードします。
-   - ダウンロードしたzipファイルを解凍し、中身を `THETAProjectionWorld/Assets` ディレクトリに配置します。
+   - ダウンロードしたzipファイルを解凍し、中身を `THETAProjectionWorld/Assets` ディレクトリに配置します(改変は不要です)。
    - TopazChat PlayerはVRChat内で動画ストリーミングを受信するために使用されます。
 
 ### セットアップ
 
 1. **このリポジトリをクローン** します。
    ```bash
-   git clone https://github.com/yourusername/VRChatThetaProjectionWorld.git
+   git clone https://github.com/hijimasa/VRChatThetaProjectionWorld.git
    cd VRChatThetaProjectionWorld
    ```
 
@@ -52,7 +64,6 @@ VRChatプロジェクトで重要なスクリプト（メッシュ変形など�
 
 4. **Unityプロジェクトのセットアップ**:
    - `THETAProjectionWorld` ディレクトリでUnityプロジェクトを開きます。
-   - VRChat SDK3 (Worlds) をインポートします。
    - TopazChat Player 3.0のファイルが `Assets` 内に配置されていることを確認します。
 
 ## 使い方
@@ -73,11 +84,10 @@ python server.py --camera 0
 1. Unity Editorで `Assets/Scenes` のシーンを開きます。
 2. TopazChat Playerで仮想カメラ「THETA Depth Camera」を選択します。
 3. Playモードに入ると、深度データに基づくリアルタイムのメッシュ変形が表示されます。
-4. Inspectorでパラメータを調整できます：
+4. `ThetaProjectionScreen` マテリアル(`Assets/ThetaProjection/Materials`)でパラメータを調整できます：
    - **Depth Scale**: 深度のスケール係数
-   - **Sphere Radius**: 投影球の半径
-   - **Min Radius**: 最小半径
-   - **Flip Y**: 画像の上下反転
+   - **Minimum Radius**: 球体の最小半径
+   - **Flip Y for Depth/RGB**: 画像の上下反転
 
 ### 3. VRChatへのアップロード
 
@@ -94,16 +104,18 @@ VRChatThetaProjectionWorld/
 │   ├── baseline_models/       # UniFuse深度推定モデル
 │   ├── utils/                 # ユーティリティ（Equirectangular変換など）
 │   └── checkpoints/           # モデルチェックポイント（自動ダウンロード）
-├── THETAProjectionWorld/      # Unityプロジェクト
+├── THETAProjectionWorld/      # サンプルUnityワールドプロジェクト
 │   └── Assets/
-│       ├── Scenes/            # メインシーン
-│       │   ├── ThetaDepthMeshDeformer.cs      # メッシュ変形スクリプト
-│       │   └── ThetaDepthDisplacementShader.shader  # GPU変形シェーダー
-│       └── Editor/
-│           └── UVSphereMeshGenerator.cs  # メッシュ生成ツール
+│       ├── ThetaProjection/   # ★ 配布用アセット — これを自分のワールドにコピー
+│       │   ├── Shaders/       # 深度変形/投影シェーダー
+│       │   ├── Materials/     # ThetaProjectionScreen.mat
+│       │   ├── Meshes/        # UVスフィアメッシュ
+│       │   ├── Udon/          # ワールド内パラメータ調整(任意)
+│       │   └── Editor/        # ワンクリックセットアップ/エクスポートツール
+│       └── Scenes/            # サンプルワールドシーン
 └── README.md
 ```
 
 ## ライセンス
 
-本プロジェクトはApache 2.0ライセンスの下で公開されています。
+本プロジェクトはApache 2.0ライセンスの下で公開されています。(TopazChat Playerは別途サードパーティの著作物であり、本ライセンスの対象外です。)

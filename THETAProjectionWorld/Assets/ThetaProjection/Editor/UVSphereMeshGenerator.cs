@@ -1,11 +1,11 @@
-// Assets/Editor/UVSphereMeshGenerator.cs
+// Assets/ThetaProjection/Editor/UVSphereMeshGenerator.cs
 using UnityEngine;
 using UnityEditor;
 using System.IO;
 
 public static class UVSphereMeshGenerator
 {
-    [MenuItem("Tools/Procedural Mesh/Create UV Sphere Mesh Asset...")]
+    [MenuItem("Tools/THETA Projection/Create UV Sphere Mesh Asset...")]
     public static void CreateUvSphereMeshAsset()
     {
         // ここを好みに変えてOK（ダイアログ無しでまず動くように固定値）
@@ -15,7 +15,7 @@ public static class UVSphereMeshGenerator
         float boundsScale = 100.0f;
 
         // 保存先（必要なら保存ダイアログにしてもOK）
-        string folder = "Assets/ProceduralMeshes";
+        string folder = "Assets/ThetaProjection/Meshes";
         if (!AssetDatabase.IsValidFolder(folder))
         {
             Directory.CreateDirectory(folder);
